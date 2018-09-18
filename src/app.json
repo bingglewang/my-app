@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/evaluate/main",
+    "pages/index/main",
+    "pages/user/main",
+    "pages/list/main",
+    "pages/result/main",
+    "pages/login/main"
+  ],
+  "tabBar": {
+    "color":"#666",
+    "selectedColor":"#009aff",
+    "backgroundColor":"#fff",
+    "borderStyle":"black",
+    "list": [{
+      "pagePath": "pages/evaluate/main",
+      "text": "评估",
+      "iconPath":"static/images/evaluate1.png",
+      "selectedIconPath":"static/images/evaluate2.png"
+    },{
+      "pagePath": "pages/index/main",
+      "text": "我的",
+      "iconPath":"static/images/user.png",
+      "selectedIconPath":"static/images/user_in.png"
+    }]
+  },
+  "window":{
+    "backgroundTextStyle":"light",
+      "navigationBarBackgroundColor": "#009aff",
+    "navigationBarTitleText": "房地产评估",
+    "navigationBarTextStyle":"white",
+    "enablePullDownRefresh": false
+  }
+}
