@@ -1,5 +1,5 @@
 <template>
-  <div class="query-result">
+  <div class="history-record">
     <div class="result-content">
       <div class="result-img-title">
         <img src="../../static/images/LOGO.jpg" class="result-img"/>
@@ -19,13 +19,13 @@
         </div>
       </div>
       <div class="result-form-input">
-        <div class="result-input-item" v-if="ownStatus!=''">{{ownStatus}}</div>
-        <div class="result-input-item">{{area}}</div>
-        <div class="result-input-item" v-if="house_type!=''">{{house_type}}</div>
-        <div class="result-input-item" v-if="floor!=''">{{floor}}</div>
-        <div class="result-input-item" v-if="orientation!=''">{{orientation}}</div>
-        <div class="result-input-item" v-if="degree_decoration!=''">{{degree_decoration}}</div>
-        <div class="result-input-item" v-if="build_type!=''">{{build_type}}</div>
+        <div class="result-input-item" v-if="ownStatus" >{{ownStatus}}</div>
+        <div class="result-input-item" v-if="area">{{area}}</div>
+        <div class="result-input-item" v-if="house_type">{{house_type}}</div>
+        <div class="result-input-item" v-if="floor">{{floor}}</div>
+        <div class="result-input-item" v-if="orientation">{{orientation}}</div>
+        <div class="result-input-item" v-if="degree_decoration">{{degree_decoration}}</div>
+        <div class="result-input-item" v-if="build_type">{{build_type}}</div>
       </div>
       <div class="result">
         <div class="result-total-single">
@@ -41,16 +41,19 @@
         </div>
       </div>
       <div class="result-bottom">以上结果仅供参考，具体以实际评估为准</div>
-      <div class="bottom-button-group">
-        <button class="bottom-button-item1" @click="toSuggestionPage" >意见反馈</button>
-        <button class="bottom-button-item2" @click="toAboutPage">联系评估</button>
+      <div class="history-objection">
+        <span class="history-span1" v-if="dissent">结果异议：{{dissent}}</span>
+        <span class="history-span2" v-if="expected_price">预期价格：{{expected_price}}万元</span>
+      </div>
+      <div class="history-objection">
+        <span class="history-span1" v-if="dissent_reason">异议理由：{{dissent_reason}}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-    import {dateFormat} from '@/utils/index'
+  import {dateFormat} from '@/utils/index'
     export default {
       data(){
         return{
@@ -65,25 +68,40 @@
           build_type:'',
           ownStatus:'',
           queryResult11:'',
-          totalPrice:''
+          totalPrice:'',
+          dissent:'',
+          expected_price:'',
+          dissent_reason:''
         }
       },
       methods:{
-        //获取缓存里面的数据
-        getLocalStory(){
-          let queryResult =  wx.getStorageSync('queryRecord');
-            this.queryTime = dateFormat(new Date(queryResult.queryDate),'yyyy-MM-dd hh:mm:ss');
-            this.detailAddress = queryResult.detailAddress;
-            this.buildYear =queryResult.buildYear != ''?queryResult.buildYear+'年':' ';
-            this.area =queryResult.area != '' ?queryResult.area+'m²':' ';
-            this.house_type =queryResult.houseType;
-            this.floor =queryResult.floor;
-            this.orientation =queryResult.orientation;
-            this.degree_decoration =queryResult.degreeDecoration;
-            this.build_type =queryResult.buildType;
-            this.ownStatus = queryResult.ownStatus;
-            this.queryResult11 = queryResult.queryResult !=''?queryResult.queryResult:'0';
-            this.totalPrice = ((parseFloat(this.queryResult11)*parseFloat(this.area))/10000).toFixed(0);
+        //初始化数据
+        async initData(){
+          console.log("id:"+this.$root.$mp.query.id);
+          let getRcordById = {
+            id:this.$root.$mp.query.id
+          }
+          let resp = await this.$post1('record/getRcordById',getRcordById);
+          console.log(4444,resp);
+          this.queryTime = dateFormat(new Date(resp.data.queryDate),'yyyy-MM-dd hh:mm:ss');
+          this.detailAddress = resp.data.detailAddress;
+          this.buildYear =  resp.data.buildYear != ''?resp.data.buildYear+'年':' ';
+          this.area =   resp.data.area != '' ?resp.data.area+'m²':' ';
+          this.house_type = resp.data.houseType;
+          this.floor = resp.data.floor;
+          this.orientation = resp.data.orientation;
+          this.degree_decoration = resp.data.degreeDecoration;
+          this.build_type = resp.data.buildType;
+          this.ownStatus = resp.data.ownStatus;
+          this.queryResult11 = resp.data.queryResult !=''?resp.data.queryResult:'0';
+          this.totalPrice = ((parseFloat(this.queryResult11)*parseFloat(this.area))/10000).toFixed(0);
+          if(resp.data.dissent == '0'){
+            this.dissent = '偏高';
+          }else if(resp.data.dissent == '1'){
+            this.dissent = '偏低';
+          }
+          this.expected_price = resp.data.expectedPrice;
+          this.dissent_reason =resp.data.dissentReason;
         },
         //关于公司页面
         toAboutPage(){
@@ -97,7 +115,7 @@
         }
       },
       mounted(){
-        this.getLocalStory();
+        this.initData();
       }
     }
 </script>
@@ -107,7 +125,7 @@
     height: 100%;
     width: 100%;
   }
-  .query-result{
+  .history-record{
     overflow: hidden;
     height: 100%;
     width: 100%;
@@ -189,27 +207,30 @@
         text-align: center;
         color: #cfcfcf;
       }
-      .bottom-button-group{
-        margin-top: 50px;
-        .bottom-button-item1{
-          display: inline-block;
-          background-color: #1692c8;
-          color: white;
+
+      .history-objection{
+        padding-top: 30px;
+        .history-span1{
+          font-size: 14px;
+          color: #cfcfcf;
           float: left;
+          font-weight: bold;
           margin-left: 30px;
-          font-size: 13px;
-          padding: 0px 30px;
-          border-radius: 6px;
+          margin-right: 30px;
+          text-overflow: -o-ellipsis-lastline;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          -webkit-box-orient: vertical;
         }
-        .bottom-button-item2{
-          display: inline-block;
-          background-color: #1692c8;
-          color: white;
+        .history-span2{
+          font-size: 14px;
+          color: #cfcfcf;
           float: right;
           margin-right: 30px;
-          font-size: 13px;
-          border-radius: 6px;
-          padding: 0px 30px;
+          font-weight: bold;
         }
       }
     }

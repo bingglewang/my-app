@@ -15,22 +15,10 @@
         <span >估价列表</span>
         <img  src="../../static/images/right3.png" class="evaluate-value" style="margin-top: 9px"/>
       </div>
-      <!--可用估价次数-->
-      <div class="evaluate-list">
-        <img src="/static/images/count.png" class="user-image-icons"/>
-        <span>可用次数</span>
-        <span class="evaluate-value">3次</span>
-      </div>
-      <!--可用估价时段-->
-      <div class="evaluate-list">
-        <img src="/static/images/time.png" class="user-image-icons"/>
-        <span>可用时段</span>
-        <span class="evaluate-value">2018-09-10 ~ 2018-10-11</span>
-      </div>
       <!--个人中心-->
       <div class="evaluate-list" @click="toUserInfo">
         <img src="/static/images/center.png" class="user-image-icons"/>
-        <span>个人中心</span>
+        <span>个人资料</span>
         <img  src="../../static/images/right3.png" class="evaluate-value" style="margin-top: 9px"/>
       </div>
 
@@ -50,6 +38,22 @@ export default {
   components: {
   },
   methods: {
+    getSetting(){
+      let _this = this;
+      wx.login({
+        success: async function (reslogin) {
+          if(reslogin.code){
+            let url = "api/wx/session";
+            let data = {
+              code:reslogin.code
+            }
+            let res1 = await _this.$post(url,data);
+            wx.setStorageSync('userSession', res1)
+            console.log("后台请求数据："+res1);
+          }
+        }
+      })
+    },
     //查询记录页面
     toList(){
       const url = '../list/main'
@@ -62,6 +66,9 @@ export default {
     },
   },
   mounted(){
+    if(wx.getStorageSync('userSession').token == null || wx.getStorageSync('userSession').token == undefined){
+      this.getSetting();
+    }
   },
   created () {
   }
@@ -100,7 +107,7 @@ export default {
         font-size: 16px;
        /* display:flex;
         align-items:center;*/
-        border-bottom:4rpx solid ghostwhite;
+        border-bottom:2px solid ghostwhite;
         .user-image-icons{
           float: left;
           margin-top: 9px;
@@ -126,8 +133,8 @@ export default {
 
   .userinfo {
     position: relative;
-    width: 750rpx;
-    height: 320rpx;
+    width: 375px;
+    height: 160px;
     color: #c5c8cf;
     display: flex;
     flex-direction: column;
@@ -137,10 +144,10 @@ export default {
   .userinfo-avatar {
     overflow:hidden;
     display: block;
-    width: 160rpx;
-    height: 160rpx;
-    margin: 20rpx;
-    margin-top: 50rpx;
+    width: 80px;
+    height: 80px;
+    margin: 10px;
+    margin-top: 25px;
     border-radius: 50%;
     border: 2px solid #fff;
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
